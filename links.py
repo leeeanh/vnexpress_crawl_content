@@ -16,8 +16,8 @@ def categories(ctg):
         second_links(ctg, array)
     return array
 def get_goc_nhin(arr):
-    # for i in range(1, 67):
-    for i in range(1, 5):
+    for i in range(1, 67):
+    # for i in range(1, 5):
         url = "https://vnexpress.net/ajax/goc-nhin?category_id=1003450&page=" + str(i) + "&exclude=3&rule=2"
         request_database(url,arr)
 
