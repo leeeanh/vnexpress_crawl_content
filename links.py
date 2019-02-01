@@ -76,7 +76,6 @@ def nong_nghiep_sach(url, arr):
             print ("L"+ctgy)
             nong_nghiep_sach_links(ctgy, arr)
 def nong_nghiep_sach_links(url, arr):
-    global i
     session = requests.session()
     webpage = session.get(url).text
     soup = BeautifulSoup(webpage, 'html.parser')
@@ -185,7 +184,6 @@ def request_database(url, array):
         print(data['message'][j]['share_url']) 
 
 def links(url,arr):
-    global i
     session = requests.session()
     webpage = session.get(url).text
     soup = BeautifulSoup(webpage, 'html.parser')
