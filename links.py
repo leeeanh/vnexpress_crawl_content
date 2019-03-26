@@ -3,13 +3,19 @@ import json
 import requests
 from bs4 import BeautifulSoup
 import codecs
+import time
 
 # category = []
 # thoi_su, goc_nhin, the_gioi, kinh_doanh, giai_tri, the_thao, phap_luat, giao_duc, suc_khoe, doi_song, du_lich, khoa_hoc, so_hoa, xe, y_kien, tam_su, cuoi= ([] for i in range(17))
+proxies = {"http": "150.129.201.30:6666",
+           "https": "92.246.220.206:49971",
+           "https": "193.70.41.31:8080"}
+
+
 def categories(ctg,file_name):
         # if ctg == "https://video.vnexpress.net" or ctg == "https://raovat.vnexpress.net": continue
     # array=[]
-    f= codecs.open(file_name,"w","utf-8")
+    f= codecs.open(file_name,"a","utf-8")
     if ctg == "https://vnexpress.net/goc-nhin": get_goc_nhin(f)
     elif ctg == "https://vnexpress.net/y-kien": links(ctg, f)
     else:
@@ -19,8 +25,10 @@ def categories(ctg,file_name):
     # return array
 def get_goc_nhin(f):
     for i in range(1, 67):
+    # for i in range(1, 5):
         url = "https://vnexpress.net/ajax/goc-nhin?category_id=1003450&page=" + str(i) + "&exclude=3&rule=2"
         request_database(url,f)
+
 
 def second_links(url, f):
     session = requests.session()
@@ -28,8 +36,8 @@ def second_links(url, f):
     soup = BeautifulSoup(webpage, 'html.parser')
     sub_menu = soup.find(id='sub_menu')
     for ctg in sub_menu.find_all('a'):
-        ctgy = ctg.get('href').encode('utf-8')
-        if "https://" not in ctg.get('href').encode('utf-8'):
+        ctgy = ctg.get('href')
+        if "https://" not in ctg.get('href'):
             ctgy = "https://vnexpress.net" + ctg.get('href')
         if (ctgy=="https://video.vnexpress.net/giai-tri" or ctgy=="https://video.vnexpress.net/the-thao" or ctgy=="https://vnexpress.netjavascript:;" or ctgy=="https://vnexpress.net/interactive/2016/bang-gia-xe" or ctgy=="https://vnexpress.net/interactive/2017/bang-gia-xe-cu" or ctgy=="https://vnexpress.net/interactive/2016/bang-gia-xe-may" or ctgy=="https://raovat.vnexpress.net/oto" or ctgy=="https://vnexpress.net/oto-xe-may/thi-bang-lai" or ctgy=="https://vnexpress.net/the-thao/du-lieu-bong-da" or ctgy=="https://vnexpress.net/the-thao/photo" or ctgy=="https://vnexpress.net/du-lich/anh-video" or ctgy=="https://vnexpress.net/so-hoa/video"
             or ctgy=="https://vnexpress.net/giao-duc/trac-nghiem" or ctgy=="https://vnexpress.net/giao-duc/trac-nghiem" or ctgy=="https://vnexpress.net/suc-khoe/cac-benh/ung-thu" or ctgy=="https://vnexpress.net/giai-tri/the-oscars" or ctgy=="https://vnexpress.net/giai-tri/thu-vien"):
@@ -47,16 +55,18 @@ def second_links(url, f):
         else:
             links(ctgy, f)
             third_links(ctgy, f)
+
+
 def third_links(url, f):
     session = requests.session()
-    webpage = session.get(url).text
+    webpage = session.get(url, proxies= proxies).text
     soup = BeautifulSoup(webpage, 'html.parser')
     main = soup.find(class_='sub_breadcrumb left')
     if(main == None): continue_stmt
     else:
         for ctg in main.find_all('a', href=True):
-            ctgy = "https://vnexpress.net" + ctg.get('href').encode('utf-8')
-            if ("javascript:;" in ctg.get('href').encode('utf-8')
+            ctgy = "https://vnexpress.net" + ctg.get('href')
+            if ("javascript:;" in ctg.get('href')
                 or ctgy == "https://vnexpress.net/bong-da/asian-cup-2019"
                 or ctgy == "https://vnexpress.net/giao-duc/giao-duc-40/quiz-game"
                 or ctgy == "https://vnexpress.net/du-lich/quoc-te/khac" or ctgy == "https://vnexpress.net/du-lich/viet-nam/khac"):
@@ -66,40 +76,43 @@ def third_links(url, f):
             else:
                 links(ctgy, f)
 
+
 def nong_nghiep_sach(url, f):
     session = requests.session()
-    webpage = session.get(url).text
+    webpage = session.get(url, proxies= proxies).text
     soup = BeautifulSoup(webpage, 'html.parser')
     main = soup.find(class_="container clearfix")
     for ctg in main.find_all('a', href=True):
         if(ctg.parent.parent.parent.name == "nav"):
-            ctgy = "https://vnexpress.net" + ctg.get('href').encode('utf-8')
+            ctgy = "https://vnexpress.net" + ctg.get('href')
             print ("L"+ctgy)
             nong_nghiep_sach_links(ctgy, f)
 
+
 def nong_nghiep_sach_links(url, f):
     session = requests.session()
-    webpage = session.get(url).text
+    webpage = session.get(url, proxies= proxies).text
     soup = BeautifulSoup(webpage, 'html.parser')
     main = soup.find(class_="content-main").find_all(class_="title_news")
     for ctg in main:
         print(ctg.find('a', href=True).get('href')) 
         # arr.append(ctg.find('a', href=True).get('href').encode('utf-8'))
-        f.write(ctg.find('a', href=True).get('href').encode('utf-8')+'\n')
+        f.write(ctg.find('a', href=True).get('href')+'\n')
     next = soup.find('a', href=True, class_='next')
     if next == None:
         continue_stmt
     else:
-        link_next = "https://vnexpress.net" + next.get('href').encode('utf-8')
+        link_next = "https://vnexpress.net" + next.get('href')
         nong_nghiep_sach_links(link_next, f)
+
 
 def asian_cup_AND_vleague(url1,f):
     session = requests.session()
-    webpage = session.get(url1).text
+    webpage = session.get(url1, proxies= proxies).text
     soup = BeautifulSoup(webpage, 'html.parser')
     main = soup.find(class_="main_menu_seagame width_common")
     for ctg in main.find_all('a'):
-        ctgy = ctg.get('href').encode('utf-8')
+        ctgy = ctg.get('href')
         if(ctgy == "https://vnexpress.net/bong-da/asian-cup-2019/lich-thi-dau" or ctgy == "https://vnexpress.net/bong-da/asian-cup-2019/bang-diem"):
             continue
         else:
@@ -138,6 +151,8 @@ def asian_cup_AND_vleague(url1,f):
                     url = "https://vnexpress.net/the-thao/seagame29/morenews/category_id/1004191/page/" + str(i) + "/exclude"
                 else: continue
                 request_database(url,f)
+
+
 def tuyen_sinh(url, f):
     links = ["https://vnexpress.net/giao-duc/tuyen-sinh", "https://vnexpress.net/giao-duc/tuyen-sinh/cao-dang-trung-cap", "https://vnexpress.net/giao-duc/tuyen-sinh/thpt", "https://vnexpress.net/giao-duc/tuyen-sinh/thcs", "https://vnexpress.net/giao-duc/tuyen-sinh/tieu-hoc"]
     for ctg in links:
@@ -145,21 +160,23 @@ def tuyen_sinh(url, f):
         if ctg=="https://vnexpress.net/giao-duc/tuyen-sinh": continue
         else:   tuyen_sinh_links(ctg, f)
 
+
 def tuyen_sinh_links(url, f):
     child_session = requests.session()
-    child_webpage = child_session.get(url).text
+    child_webpage = child_session.get(url,proxies= proxies).text
     child_soup = BeautifulSoup(child_webpage, 'html.parser')
     child_main = child_soup.find(class_="col_left col_main")
     for child_ctg in child_main.find_all(class_="title_news"):
         # arr.append(child_ctg.find('a').get('href').encode('utf-8'))
-        f.write(child_ctg.find('a').get('href').encode('utf-8')+'\n')
+        f.write(child_ctg.find('a').get('href') + '\n')
         print(child_ctg.find('a').get('href').encode('utf-8')) 
     next = child_soup.find('a', href=True, class_='next')
     if (next == None): continue_stmt
     else:
-        link_next = "https://vnexpress.net" + next.get('href').encode('utf-8')
-        print("L" + link_next) 
+        link_next = "https://vnexpress.net" + next.get('href')
         tuyen_sinh_links(link_next, f)
+
+
 def start_up(f):
     links = ["https://startup.vnexpress.net/tin-tuc/hanh-trinh-khoi-nghiep","https://startup.vnexpress.net/tin-tuc/xu-huong","https://startup.vnexpress.net/tin-tuc/y-tuong-moi","https://startup.vnexpress.net/tin-tuc/goc-chuyen-gia"]
     for ctg in links:
@@ -177,21 +194,26 @@ def start_up(f):
             else:
                 url = "https://vnexpress.net/the-thao/seagame29/morenews/category_id/1004065/page/" + str(i) + "/exclude?fbclid=IwAR1xEBfHsnzuRdSYIUiqOpeNKnMdrZm9P_I7A6pawEDmY79LqUae1yyrBSk"
             request_database(url, f)
+
+
 def han_che_lam_dung_khang_sinh(url1, f):
     for i in range(1, 6):
         url = "https://vnexpress.net/ajax/goc-nhin?category_id=1004195&page=" + str(i) + "&exclude=3&rule=2&fbclid=IwAR2bOd401tYEyyCjKvjlCbK1JXcVxMMq225hoGlFy00Ssud9NdhLnh6MnkM"
         request_database(url, f)
+
+
 def request_database(url, f):
-    resp = requests.get(url=url)
+    resp = requests.get(url=url, proxies= proxies)
     data = resp.json()
     for j in range(0, len(data['message'])):
         # array.append(data['message'][j]['share_url'].encode('utf-8'))
-        f.write(data['message'][j]['share_url'].encode('utf-8')+'\n')
+        f.write(data['message'][j]['share_url']+'\n')
         print(data['message'][j]['share_url']) 
+
 
 def links(url,f):
     session = requests.session()
-    webpage = session.get(url).text
+    webpage = session.get(url, proxies= proxies).text
     soup = BeautifulSoup(webpage, 'html.parser')
     main_side = soup.find(class_='sidebar_1')
     if(main_side == None): continue_stmt
@@ -201,14 +223,15 @@ def links(url,f):
             link = sub_c.find('a', href=True)
             print(link.get('href')) 
             # arr.append(link.get('href').encode('utf-8'))
-            f.write(link.get('href').encode('utf-8')+'\n')
+            f.write(link.get('href')+'\n')
     next = soup.find('a', href=True, class_='next')
+    soup.decompose()
     if next == None: continue_stmt
     else:
-        link_next = next.get('href').encode('utf-8')
-        if("https://" not in next.get('href').encode('utf-8')):
-            link_next = "https://vnexpress.net" + next.get('href').encode('utf-8')
-        print("L" + link_next) 
+        link_next = next.get('href')
+        print(link_next)
+        if("https://" not in next.get('href')):
+            link_next = "https://vnexpress.net" + next.get('href')
         links(link_next,f)
 # if __name__ == '__main__':
 #     categories()
@@ -216,3 +239,6 @@ def links(url,f):
     # links(url, the_thao)
 
 
+if __name__ == "__main__":
+    categories("https://vnexpress.net/thoi-su","/home/leanh/vnexpress/crawl_url/thoi-su.txt")
+    
